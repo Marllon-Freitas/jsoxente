@@ -1,0 +1,10 @@
+var language = "Oxente";
+
+if (language == "Oxente") print or;
+
+// single line comment
+/*
+  multi-line comment
+  This is a comment in Oxente.
+  It can span multiple lines.
+*/
