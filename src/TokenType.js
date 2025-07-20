@@ -14,6 +14,8 @@ const TokenType = Object.freeze({
   SEMICOLON:   'SEMICOLON',       // ';'
   SLASH:       'SLASH',           // '/'
   STAR:        'STAR',            // '*'
+  QUESTION:   'QUESTION',         // '?'
+  COLON:       'COLON',           // ':'
 
   // One or two character tokens.
   BANG:          'BANG',          // '!'

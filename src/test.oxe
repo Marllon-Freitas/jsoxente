@@ -1,7 +1,3 @@
 // test.oxe
 
-// This example tests precedence, associativity and grouping.
-// The parser should understand that multiplication and division happen before
-// comparison, and that comparisons are evaluated from left to right.
-
-(1 + 2) * 3 - 4 / 2 == -1 + 2 != false
+1 > 2 ? 3 : 4 // test ternary operator

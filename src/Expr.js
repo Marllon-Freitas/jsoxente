@@ -1,5 +1,3 @@
-// jsoxente/Expr.js
-
 /**
  * The base class for all expression classes.
  * We don't instantiate this directly, but instead extend it.
@@ -15,18 +13,13 @@ class Expr {
   }
 }
 
-// --- Visitor "Interface" ---
-// In JS, we can't define a true interface. This class serves as a base
-// to define the shape that all our Visitor implementations must have.
 class Visitor {
   visitBinaryExpr(_expr) { throw new Error("Method not implemented."); }
   visitGroupingExpr(_expr) { throw new Error("Method not implemented."); }
   visitLiteralExpr(_expr) { throw new Error("Method not implemented."); }
   visitUnaryExpr(_expr) { throw new Error("Method not implemented."); }
+  visitTernaryExpr(_expr) { throw new Error("Method not implemented."); }
 }
-
-
-// --- Subclasses for each expression type ---
 
 /**
  * Represents a binary operation in the tree.
@@ -107,13 +100,28 @@ class Unary extends Expr {
   }
 }
 
+/**
+ * Represents a ternary operation.
+ * Ex: condition ? trueValue : falseValue
+ */
+class Ternary extends Expr {
+  constructor(condition, thenBranch, elseBranch) {
+    super();
+    this.condition = condition;
+    this.thenBranch = thenBranch;
+    this.elseBranch = elseBranch;
+  }
 
-// --- Simulating Nested Classes ---
+  accept(visitor) {
+    return visitor.visitTernaryExpr(this);
+  }
+}
+
 Expr.Visitor  = Visitor;
 Expr.Binary   = Binary;
 Expr.Grouping = Grouping;
 Expr.Literal  = Literal;
 Expr.Unary    = Unary;
-
+Expr.Ternary  = Ternary;
 
 module.exports = Expr;

@@ -6,16 +6,16 @@ class ParseError extends Error {}
 
 // The grammar of the language is currently:
 /**
-  expression     → equality ;
-
+  expression     → comma ;
+  comma          → ternary ( ( "," ) ternary )* ;
+  ternary        → equality ( "?" expression ":" ternary )? ;
   equality       → comparison ( ( "!=" | "==" ) comparison )* ;
   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
   term           → factor ( ( "-" | "+" ) factor )* ;
   factor         → unary ( ( "/" | "*" ) unary )* ;
   unary          → ( "!" | "-" ) unary | primary ;
-
   primary        → NUMBER | STRING | "true" | "false" | "nil"
-                  | "(" expression ")" ;
+                | "(" expression ")" ;
   */
 
 /**
@@ -51,10 +51,37 @@ class Parser {
   }
 
   expression() {
-    return this.equality();
+    return this.comma();
+  }
+
+  comma() {
+    let expr = this.ternary();
+    while (this.match(TokenType.COMMA)) {
+      const operator = this.previous();
+      const right = this.ternary();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+    return expr;
+  }
+
+  ternary() {
+    let expr = this.equality();
+    if (this.match(TokenType.QUESTION)) {
+      const thenBranch = this.expression();
+      this.consume(TokenType.COLON, "Expect ':' after then branch of conditional expression.");
+      const elseBranch = this.ternary();
+      expr = new Expr.Ternary(expr, thenBranch, elseBranch);
+    }
+    return expr;
   }
 
   equality() {
+    if (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+      this.error(this.previous(), "Missing left-hand operand.");
+      this.comparison();
+      return new Expr.Literal(null);
+    }
+
     let expr = this.comparison();
 
     while (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
@@ -62,11 +89,16 @@ class Parser {
       const right = this.comparison();
       expr = new Expr.Binary(expr, operator, right);
     }
-
     return expr;
   }
   
   comparison() {
+    if (this.match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
+      this.error(this.previous(), "Missing left-hand operand.");
+      this.term();
+      return new Expr.Literal(null);
+    }
+
     let expr = this.term();
 
     while (this.match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
@@ -74,11 +106,16 @@ class Parser {
       const right = this.term();
       expr = new Expr.Binary(expr, operator, right);
     }
-
     return expr;
   }
   
   term() {
+    if (this.match(TokenType.PLUS)) {
+      this.error(this.previous(), "Missing left-hand operand.");
+      this.factor();
+      return new Expr.Literal(null);
+    }
+
     let expr = this.factor();
 
     while (this.match(TokenType.MINUS, TokenType.PLUS)) {
@@ -91,6 +128,12 @@ class Parser {
   }
   
   factor() {
+    if (this.match(TokenType.SLASH, TokenType.STAR)) {
+      this.error(this.previous(), "Missing left-hand operand.");
+      this.unary();
+      return new Expr.Literal(null);
+    }
+
     let expr = this.unary();
 
     while (this.match(TokenType.SLASH, TokenType.STAR)) {

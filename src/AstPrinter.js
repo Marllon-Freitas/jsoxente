@@ -29,6 +29,10 @@ class AstPrinter {
     return this.parenthesize(expr.operator.lexeme, expr.right);
   }
 
+  visitTernaryExpr(expr) {
+    return this.parenthesize("?:", expr.condition, expr.thenBranch, expr.elseBranch);
+  }
+
   /**
    * A helper method to wrap an expression and its parts in parentheses.
    * @private

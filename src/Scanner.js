@@ -3,7 +3,7 @@ const TokenType = require('./TokenType');
 
 const {
   LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, COMMA, DOT, MINUS,
-  PLUS, SEMICOLON, SLASH, STAR, BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL,
+  PLUS, SEMICOLON, SLASH, STAR, QUESTION, COLON, BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL,
   GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, IDENTIFIER, STRING, NUMBER,
   AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR, PRINT, RETURN, SUPER,
   THIS, TRUE, VAR, WHILE, EOF
@@ -86,6 +86,8 @@ class Scanner {
       case '+': this.addToken(PLUS); break;
       case ';': this.addToken(SEMICOLON); break;
       case '*': this.addToken(STAR); break;
+      case '?': this.addToken(QUESTION); break;
+      case ':': this.addToken(COLON); break;
       case '!': this.addToken(this.match('=') ? BANG_EQUAL : BANG); break;
       case '=': this.addToken(this.match('=') ? EQUAL_EQUAL : EQUAL); break;
       case '<': this.addToken(this.match('=') ? LESS_EQUAL : LESS); break;
