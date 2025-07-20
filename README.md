@@ -8,7 +8,10 @@ This project is a personal study of interpreter architecture. Its structure and 
 
 🚧 **In Development...** 🚧
 
-This implementation currently features a **Scanner (Lexer)** capable of tokenizing the entire Oxente language grammar. 
+For now we have:
+
+  * A **Scanner (Lexer)** that breaks the source code into a stream of tokens.
+  * A **Parser** that consumes these tokens and builds an **Abstract Syntax Tree (AST)**, correctly handling operator precedence and associativity for all expressions.
 
 ## 📚 Primary Source
 

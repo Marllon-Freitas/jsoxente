@@ -1,7 +1,12 @@
 const fs = require('fs');
 const process = require('process');
 const readline = require('readline');
+
 const Scanner = require('./Scanner');
+const Parser = require('./Parser');
+const AstPrinter = require('./AstPrinter');
+const TokenType = require('./TokenType');
+const Token = require('./Token');
 
 let hadError = false;
 
@@ -58,13 +63,25 @@ function run(source) {
   const scanner = new Scanner(source, error);
   const tokens = scanner.scanTokens();
 
-  for (const token of tokens) {
-    console.log(token.toString());
-  }
+  if (hadError) return;
+
+  const parser = new Parser(tokens, error);
+  const expression = parser.parse();
+
+  console.log(new AstPrinter().print(expression));
 }
 
 function error(line, message) {
-  report(line, "", message);
+  if (line instanceof Token) {
+    const token = line;
+    if (token.type === TokenType.EOF) {
+      report(token.line, " at end", message);
+    } else {
+      report(token.line, ` at '${token.lexeme}'`, message);
+    }
+  } else {
+    report(lineOrToken, "", message);
+  }
 }
 
 function report(line, where, message) {
