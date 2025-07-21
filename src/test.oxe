@@ -1,17 +1,7 @@
-// test.oxe
+var a = "initial value";
+print a;
 
-var a = "hello";
-var b = "world";
-print a + " " + b + "!";
+a = "new value";
+print a;
 
-var coffee = "strong";
-print coffee;
-
-var coffee = "weak";
-print coffee;
-
-var number = 10;
-print number * 2;
-
-var nilVar;
-print nilVar;
+print a = "another value";

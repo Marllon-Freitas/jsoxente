@@ -31,6 +31,20 @@ class Environment {
 
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   }
+
+  /**
+   * Assigns a new value to an existing variable.
+   * Throws a runtime error if the variable is not defined.
+   * @param {Token} name The token for the variable's name.
+   * @param {any} value The new value.
+   */
+  assign(name, value) {
+    if (this.values.has(name.lexeme)) {
+      this.values.set(name.lexeme, value);
+      return;
+    }
+    throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
+  }
 }
 
 module.exports = Environment;

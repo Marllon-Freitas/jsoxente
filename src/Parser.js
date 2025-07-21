@@ -105,7 +105,25 @@ class Parser {
 
   // Gramar Rule Methods for Expressions:
   expression() {
-    return this.comma();
+    return this.assignment();
+  }
+
+  assignment() {
+    const expr = this.comma();
+
+    if (this.match(TokenType.EQUAL)) {
+      const equals = this.previous();
+      const value = this.assignment();
+
+      if (expr instanceof Expr.Variable) {
+        const name = expr.name;
+        return new Expr.Assign(name, value);
+      }
+
+      this.error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
   }
 
   comma() {

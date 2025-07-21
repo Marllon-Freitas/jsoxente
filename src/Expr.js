@@ -20,6 +20,7 @@ class Visitor {
   visitUnaryExpr(_expr) { throw new Error("Method not implemented."); }
   visitTernaryExpr(_expr) { throw new Error("Method not implemented."); }
   visitVariableExpr(_expr) { throw new Error("Method not implemented."); }
+  visitAssignExpr(_expr) { throw new Error("Method not implemented."); }
 }
 
 /**
@@ -40,6 +41,26 @@ class Binary extends Expr {
    */
   accept(visitor) {
     return visitor.visitBinaryExpr(this);
+  }
+}
+
+/**
+ * Represents an assignment expression.
+ * Ex: myVariable = "new value";
+ */
+class Assign extends Expr {
+  /**
+   * @param {Token} name The token for the variable being assigned to.
+   * @param {Expr} value The new value expression.
+   */
+  constructor(name, value) {
+    super();
+    this.name = name;
+    this.value = value;
+  }
+  
+  accept(visitor) {
+    return visitor.visitAssignExpr(this);
   }
 }
 
@@ -137,6 +158,7 @@ class Variable extends Expr {
 }
 
 Expr.Visitor  = Visitor;
+Expr.Assign   = Assign;
 Expr.Binary   = Binary;
 Expr.Grouping = Grouping;
 Expr.Literal  = Literal;

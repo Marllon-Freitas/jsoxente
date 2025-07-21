@@ -43,23 +43,29 @@ class Interpreter {
     this.environment.define(stmt.name.lexeme, value);
     return null;
   }
-
-  visitVariableExpr(expr) {
-    return this.environment.get(expr.name);
-  }
-
+  
   visitExpressionStmt(stmt) {
     this.evaluate(stmt.expression);
     return null;
   }
-
+  
   visitPrintStmt(stmt) {
     const value = this.evaluate(stmt.expression);
     console.log(this.stringify(value));
     return null;
   }
-
+  
   // Expression evaluation methods:
+  visitAssignExpr(expr) {
+    const value = this.evaluate(expr.value);
+    this.environment.assign(expr.name, value);
+    return value;
+  }
+  
+  visitVariableExpr(expr) {
+    return this.environment.get(expr.name);
+  }
+
   visitLiteralExpr(expr) {
     return expr.value;
   }
