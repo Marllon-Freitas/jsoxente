@@ -25,10 +25,15 @@ class Interpreter {
     this.runtimeError = runtimeErrorReporter;
   }
 
-  interpret(expression) {
+  /**
+   * The main entry point for interpretation. It executes a list of statements.
+   * @param {Stmt[]} statements The list of statements to execute.
+   */
+  interpret(statements) {
     try {
-      const value = this.evaluate(expression);
-      console.log(this.stringify(value));
+      for (const statement of statements) {
+        this.execute(statement);
+      }
     } catch (error) {
       if (error instanceof RuntimeError) {
         this.runtimeError(error);
@@ -38,6 +43,19 @@ class Interpreter {
     }
   }
 
+  // Statement execution methods:
+  visitExpressionStmt(stmt) {
+    this.evaluate(stmt.expression);
+    return null;
+  }
+
+  visitPrintStmt(stmt) {
+    const value = this.evaluate(stmt.expression);
+    console.log(this.stringify(value));
+    return null;
+  }
+
+  // Expression evaluation methods:
   visitLiteralExpr(expr) {
     return expr.value;
   }
@@ -111,6 +129,10 @@ class Interpreter {
     } else {
       return this.evaluate(expr.elseBranch);
     }
+  }
+
+  execute(stmt) {
+    stmt.accept(this);
   }
 
   evaluate(expr) {

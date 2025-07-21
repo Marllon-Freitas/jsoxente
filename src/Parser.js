@@ -1,11 +1,20 @@
 const TokenType = require('./TokenType');
 const Expr = require('./Expr');
 const Token = require('./Token');
+const Stmt = require('./Stmt');
 
 class ParseError extends Error {}
 
 // The grammar of the language is currently:
 /**
+  program        → statement* EOF ;
+
+  statement      → exprStmt
+                | printStmt ;
+
+  exprStmt       → expression ";" ;
+  printStmt      → "print" expression ";" ;
+
   expression     → comma ;
   comma          → ternary ( ( "," ) ternary )* ;
   ternary        → equality ( "?" expression ":" ternary )? ;
@@ -35,21 +44,38 @@ class Parser {
   }
 
   /**
-   * The main entry point. Starts parsing from the 'expression' rule.
-   * It handles ParseError exceptions to enable panic mode error recovery.
-   * @returns {Expr | null} The root of the generated expression tree, or null if a syntax error was found.
+   * The main entry point. Parses a series of statements until it reaches the end.
+   * @returns {Stmt[]} A list of statements.
    */
   parse() {
-    try {
-      return this.expression();
-    } catch (error) {
-      if (error instanceof ParseError) {
-        return null;
-      }
-      throw error;
+    const statements = [];
+    while (!this.isAtEnd()) {
+      statements.push(this.statement());
     }
+    return statements;
   }
 
+  // Gramar Rule Methods for Statements:
+  statement() {
+    if (this.match(TokenType.PRINT)) {
+      return this.printStatement();
+    }
+    return this.expressionStatement();
+  }
+
+  printStatement() {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
+    return new Stmt.Print(value);
+  }
+
+  expressionStatement() {
+    const expr = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+    return new Stmt.Expression(expr);
+  }
+
+  // Gramar Rule Methods for Expressions:
   expression() {
     return this.comma();
   }
@@ -123,7 +149,7 @@ class Parser {
       const right = this.factor();
       expr = new Expr.Binary(expr, operator, right);
     }
-
+    
     return expr;
   }
   
@@ -151,7 +177,7 @@ class Parser {
       const right = this.unary();
       return new Expr.Unary(operator, right);
     }
-    
+
     return this.primary();
   }
   
@@ -159,11 +185,10 @@ class Parser {
     if (this.match(TokenType.FALSE)) return new Expr.Literal(false);
     if (this.match(TokenType.TRUE)) return new Expr.Literal(true);
     if (this.match(TokenType.NIL)) return new Expr.Literal(null);
-
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
       return new Expr.Literal(this.previous().literal);
     }
-    
+
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
