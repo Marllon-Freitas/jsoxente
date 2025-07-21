@@ -7,13 +7,15 @@ class ParseError extends Error {}
 
 // The grammar of the language is currently:
 /**
-  program        → statement* EOF ;
+  program        → declaration* EOF ;
+
+  declaration    → varDecl
+                | statement ;
 
   statement      → exprStmt
                 | printStmt ;
 
-  exprStmt       → expression ";" ;
-  printStmt      → "print" expression ";" ;
+  varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
   expression     → comma ;
   comma          → ternary ( ( "," ) ternary )* ;
@@ -24,7 +26,7 @@ class ParseError extends Error {}
   factor         → unary ( ( "/" | "*" ) unary )* ;
   unary          → ( "!" | "-" ) unary | primary ;
   primary        → NUMBER | STRING | "true" | "false" | "nil"
-                | "(" expression ")" ;
+                | "(" expression ")" | IDENTIFIER ;
   */
 
 /**
@@ -50,17 +52,43 @@ class Parser {
   parse() {
     const statements = [];
     while (!this.isAtEnd()) {
-      statements.push(this.statement());
+      const declaration = this.declaration();
+      if (declaration !== null) {
+        statements.push(declaration);
+      }
     }
     return statements;
   }
 
-  // Gramar Rule Methods for Statements:
+  // Grammar Rule Methods for Statements:
+  declaration() {
+    try {
+      if (this.match(TokenType.VAR)) return this.varDeclaration();
+      return this.statement();
+    } catch (error) {
+      if (error instanceof ParseError) {
+        this.synchronize();
+        return null;
+      }
+      throw error;
+    }
+  }
+
   statement() {
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
     }
     return this.expressionStatement();
+  }
+
+  varDeclaration() {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect variable name.");
+    let initializer = null;
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression();
+    }
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
   }
 
   printStatement() {
@@ -189,6 +217,10 @@ class Parser {
       return new Expr.Literal(this.previous().literal);
     }
 
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new Expr.Variable(this.previous());
+    }
+
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
@@ -238,6 +270,25 @@ class Parser {
   error(token, message) {
     this.errorReporter(token, message);
     return new ParseError();
+  }
+
+  synchronize() {
+    this.advance();
+    while (!this.isAtEnd()) {
+      if (this.previous().type === TokenType.SEMICOLON) return;
+      switch (this.peek().type) {
+        case TokenType.CLASS: 
+        case TokenType.FUN: 
+        case TokenType.VAR:
+        case TokenType.FOR: 
+        case TokenType.IF: 
+        case TokenType.WHILE:
+        case TokenType.PRINT: 
+        case TokenType.RETURN:
+          return;
+      }
+      this.advance();
+    }
   }
 }
 

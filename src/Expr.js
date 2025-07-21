@@ -19,6 +19,7 @@ class Visitor {
   visitLiteralExpr(_expr) { throw new Error("Method not implemented."); }
   visitUnaryExpr(_expr) { throw new Error("Method not implemented."); }
   visitTernaryExpr(_expr) { throw new Error("Method not implemented."); }
+  visitVariableExpr(_expr) { throw new Error("Method not implemented."); }
 }
 
 /**
@@ -117,11 +118,30 @@ class Ternary extends Expr {
   }
 }
 
+/**
+ * Represents a variable being accessed in an expression.
+ * Ex: var myVariable;
+ */
+class Variable extends Expr {
+  /**
+   * @param {Token} name The token for the variable's name.
+   */
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+  
+  accept(visitor) {
+    return visitor.visitVariableExpr(this);
+  }
+}
+
 Expr.Visitor  = Visitor;
 Expr.Binary   = Binary;
 Expr.Grouping = Grouping;
 Expr.Literal  = Literal;
 Expr.Unary    = Unary;
 Expr.Ternary  = Ternary;
+Expr.Variable = Variable;
 
 module.exports = Expr;

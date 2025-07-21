@@ -1,18 +1,7 @@
 const TokenType = require('./TokenType');
-
-/**
- * A custom error class for reporting errors that occur during interpretation.
- */
-class RuntimeError extends Error {
-  /**
-   * @param {Token} token The token that caused the error.
-   * @param {string} message The error message.
-   */
-  constructor(token, message) {
-    super(message);
-    this.token = token;
-  }
-}
+const RuntimeError = require('./RuntimeError');
+const Stmt = require('./Stmt');
+const Environment = require('./Environment');
 
 /**
  * The Interpreter walks the AST and evaluates expressions to produce a final value.
@@ -23,6 +12,7 @@ class Interpreter {
    */
   constructor(runtimeErrorReporter) {
     this.runtimeError = runtimeErrorReporter;
+    this.environment = new Environment();
   }
 
   /**
@@ -44,6 +34,20 @@ class Interpreter {
   }
 
   // Statement execution methods:
+  visitVariableStmt(stmt) {
+    let value = null;
+    if (stmt.initializer !== null) {
+      value = this.evaluate(stmt.initializer);
+    }
+
+    this.environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  visitVariableExpr(expr) {
+    return this.environment.get(expr.name);
+  }
+
   visitExpressionStmt(stmt) {
     this.evaluate(stmt.expression);
     return null;

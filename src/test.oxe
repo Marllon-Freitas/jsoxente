@@ -1,5 +1,17 @@
 // test.oxe
 
-print "one";
-print true;
-print(1 + 2 / 2 > 6 ? "yes" : "no");
+var a = "hello";
+var b = "world";
+print a + " " + b + "!";
+
+var coffee = "strong";
+print coffee;
+
+var coffee = "weak";
+print coffee;
+
+var number = 10;
+print number * 2;
+
+var nilVar;
+print nilVar;
