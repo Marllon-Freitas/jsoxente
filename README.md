@@ -12,6 +12,7 @@ For now we have:
 
   * A **Scanner (Lexer)** that breaks the source code into a stream of tokens.
   * A **Parser** that consumes these tokens and builds an **Abstract Syntax Tree (AST)**, correctly handling operator precedence and associativity for all expressions.
+  * An **Interpreter** that walks the AST to evaluate expressions and produce a final value, complete with runtime error handling for type mismatches and division by zero.
 
 ## 📚 Primary Source
 

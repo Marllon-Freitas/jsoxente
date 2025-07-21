@@ -4,11 +4,14 @@ const readline = require('readline');
 
 const Scanner = require('./Scanner');
 const Parser = require('./Parser');
-const AstPrinter = require('./AstPrinter');
+const Interpreter = require('./Interpreter');
 const TokenType = require('./TokenType');
 const Token = require('./Token');
 
 let hadError = false;
+let hadRuntimeError = false;
+
+const interpreter = new Interpreter(runtimeError);
 
 function main() {
   const args = process.argv.slice(2);
@@ -28,6 +31,7 @@ function runFile(path) {
     const source = fs.readFileSync(path, 'utf8');
     run(source);
     if (hadError) process.exit(65);
+    if (hadRuntimeError) process.exit(70);
   } catch (error) {
     console.error(`Error reading file: ${path}`);
     process.exit(74);
@@ -46,6 +50,7 @@ function runPrompt() {
   rl.on('line', (line) => {
     run(line);
     hadError = false;
+    hadRuntimeError = false;
     rl.prompt();
   });
 
@@ -63,12 +68,12 @@ function run(source) {
   const scanner = new Scanner(source, error);
   const tokens = scanner.scanTokens();
 
-  if (hadError) return;
-
   const parser = new Parser(tokens, error);
   const expression = parser.parse();
+  
+  if (hadError) return;
 
-  console.log(new AstPrinter().print(expression));
+  interpreter.interpret(expression);
 }
 
 function error(line, message) {
@@ -82,6 +87,11 @@ function error(line, message) {
   } else {
     report(lineOrToken, "", message);
   }
+}
+
+function runtimeError(error) {
+  console.error(`Runtime Error: ${error.message} [line ${error.token.line}]`);
+  hadRuntimeError = true;
 }
 
 function report(line, where, message) {
