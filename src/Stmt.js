@@ -19,6 +19,24 @@ class Visitor {
 }
 
 /**
+ * Represents a block of statements.
+ * Ex: { var a = 1; print a; }
+ */
+class Block extends Stmt {
+  /**
+   * @param {Stmt[]} statements The list of statements inside the block.
+   */
+  constructor(statements) {
+    super();
+    this.statements = statements;
+  }
+
+  accept(visitor) {
+    return visitor.visitBlockStmt(this);
+  }
+}
+
+/**
  * Represents an expression statement.
  * Ex: 5 + 3;
  */
@@ -75,6 +93,7 @@ class Var extends Stmt {
 }
 
 Stmt.Visitor = Visitor;
+Stmt.Block = Block;
 Stmt.Expression = Expression;
 Stmt.Print = Print;
 Stmt.Var = Var;

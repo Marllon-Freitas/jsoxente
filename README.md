@@ -12,7 +12,7 @@ For now we have:
 
   * A **Scanner (Lexer)** that breaks the source code into a stream of tokens.
   * A **Parser** that consumes these tokens and builds an **Abstract Syntax Tree (AST)**, correctly handling operator precedence and associativity for all expressions.
-  * An **Interpreter** that walks the AST to execute statements and evaluate expressions, managing state in an environment.
+  * An **Interpreter** that walks the AST to execute statements and evaluate expressions, managing state across nested scopes in a chained environment.
 
 ## 📚 Primary Source
 

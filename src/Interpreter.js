@@ -12,7 +12,8 @@ class Interpreter {
    */
   constructor(runtimeErrorReporter) {
     this.runtimeError = runtimeErrorReporter;
-    this.environment = new Environment();
+    this.globals = new Environment();
+    this.environment = this.globals;
   }
 
   /**
@@ -43,6 +44,11 @@ class Interpreter {
     this.environment.define(stmt.name.lexeme, value);
     return null;
   }
+
+  visitBlockStmt(stmt) {
+    this.executeBlock(stmt.statements, new Environment(this.environment));
+    return null;
+  }
   
   visitExpressionStmt(stmt) {
     this.evaluate(stmt.expression);
@@ -61,7 +67,7 @@ class Interpreter {
     this.environment.assign(expr.name, value);
     return value;
   }
-  
+
   visitVariableExpr(expr) {
     return this.environment.get(expr.name);
   }
@@ -147,6 +153,18 @@ class Interpreter {
 
   evaluate(expr) {
     return expr.accept(this);
+  }
+
+  executeBlock(statements, environment) {
+    const previous = this.environment;
+    try {
+      this.environment = environment;
+      for (const statement of statements) {
+        this.execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   checkNumberOperand(operator, operand) {

@@ -2,10 +2,15 @@ const RuntimeError = require('./RuntimeError');
 const Token = require('./Token');
 
 /**
- * The Environment class keeps track of the bindings between variable names and their values.
+ * The Environment class keeps track of variable bindings.
+ * It supports nesting to handle lexical scope.
  */
 class Environment {
-  constructor() {
+  /**
+   * @param {Environment | null} enclosing The enclosing (parent) environment.
+   */
+  constructor(enclosing = null) {
+    this.enclosing = enclosing;
     this.values = new Map();
   }
 
@@ -29,6 +34,10 @@ class Environment {
       return this.values.get(name.lexeme);
     }
 
+    if (this.enclosing !== null) {
+      return this.enclosing.get(name);
+    }
+
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   }
 
@@ -43,6 +52,12 @@ class Environment {
       this.values.set(name.lexeme, value);
       return;
     }
+
+    if (this.enclosing !== null) {
+      this.enclosing.assign(name, value);
+      return;
+    }
+    
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   }
 }
