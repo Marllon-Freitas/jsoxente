@@ -8,11 +8,13 @@ This project is a personal study of interpreter architecture. Its structure and 
 
 🚧 **In Development...** 🚧
 
-For now we have:
+The language is now **Turing-complete** and features a set of control flow statements, including conditionals (`if-else`), loops (`for`, `while`), and loop control (`break`).
 
-  * A **Scanner (Lexer)** that breaks the source code into a stream of tokens.
-  * A **Parser** that consumes these tokens and builds an **Abstract Syntax Tree (AST)**, correctly handling operator precedence and associativity for all expressions.
-  * An **Interpreter** that walks the AST to execute statements and evaluate expressions, managing state across nested scopes in a chained environment.
+The current implementation includes:
+
+* A **Scanner (Lexer)** that breaks the source code into a stream of tokens.
+* A **Parser** that builds an **Abstract Syntax Tree (AST)**, correctly handling precedence and error recovery.
+* An **Interpreter** that walks the AST to execute statements and evaluate expressions, managing state across nested scopes.
 
 ## 📚 Primary Source
 
