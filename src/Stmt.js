@@ -16,6 +16,29 @@ class Visitor {
   visitExpressionStmt(_stmt) { throw new Error("Method not implemented."); }
   visitPrintStmt(_stmt) { throw new Error("Method not implemented."); }
   visitVariableStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitBlockStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitIfStmt(_stmt) { throw new Error("Method not implemented."); }
+}
+
+/**
+ * Represents an if(-else) statement.
+ */
+class If extends Stmt {
+  /**
+   * @param {Expr} condition The condition expression.
+   * @param {Stmt} thenBranch The statement to execute if the condition is truthy.
+   * @param {Stmt | null} elseBranch The statement to execute if the condition is falsey.
+   */
+  constructor(condition, thenBranch, elseBranch) {
+    super();
+    this.condition = condition;
+    this.thenBranch = thenBranch;
+    this.elseBranch = elseBranch;
+  }
+
+  accept(visitor) {
+    return visitor.visitIfStmt(this);
+  }
 }
 
 /**
@@ -97,5 +120,6 @@ Stmt.Block = Block;
 Stmt.Expression = Expression;
 Stmt.Print = Print;
 Stmt.Var = Var;
+Stmt.If = If;
 
 module.exports = Stmt;

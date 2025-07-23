@@ -1,31 +1,14 @@
-var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
-  print a;
-  print b;
-  print c;
-}
-print a;
-print b;
-print c;
+var a = 10;
 
-/*
- * inner a
- * outer b
- * global c
- * outer a
- * outer b
- * global c
- * global a
- * global b
- * global c
-*/
+if (a > 5) {
+  print "a its greater than 5";
+} else {
+  print "a its not greater than 5";
+}
+
+if (a < 5) {
+  print "This will not be printed";
+}
+
+// "Dangling Else" Test
+if (true) if(false) print "not"; else print "yes"; // This should print "yes"

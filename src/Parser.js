@@ -13,11 +13,18 @@ class ParseError extends Error {}
                 | statement ;
 
   statement      → exprStmt
-                | printStmt ;
+                | ifStmt
+                | printStmt
+                | block ;
 
   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+  exprStmt       → expression ";" ;
+  printStmt      → "print" expression ";" ;
+  block          → "{" declaration* "}" ;
+  ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 
-  expression     → comma ;
+  expression     → assignment ;
+  assignment     → IDENTIFIER "=" assignment | comma ;
   comma          → ternary ( ( "," ) ternary )* ;
   ternary        → equality ( "?" expression ":" ternary )? ;
   equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -74,7 +81,22 @@ class Parser {
     }
   }
 
+  ifStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+    const condition = this.expression();
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+
+    const thenBranch = this.statement();
+    let elseBranch = null;
+    if (this.match(TokenType.ELSE)) {
+      elseBranch = this.statement();
+    }
+
+    return new Stmt.If(condition, thenBranch, elseBranch);
+  }
+
   statement() {
+    if (this.match(TokenType.IF)) return this.ifStatement();
     if (this.match(TokenType.PRINT)) return this.printStatement();
     if (this.match(TokenType.LEFT_BRACE)) {
       return new Stmt.Block(this.block());

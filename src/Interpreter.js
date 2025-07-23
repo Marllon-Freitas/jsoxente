@@ -45,6 +45,15 @@ class Interpreter {
     return null;
   }
 
+  visitIfStmt(stmt) {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch !== null) {
+      this.execute(stmt.elseBranch);
+    }
+    return null;
+  }
+
   visitBlockStmt(stmt) {
     this.executeBlock(stmt.statements, new Environment(this.environment));
     return null;
