@@ -19,6 +19,16 @@ class Visitor {
   visitBlockStmt(_stmt) { throw new Error("Method not implemented."); }
   visitIfStmt(_stmt) { throw new Error("Method not implemented."); }
   visitWhileStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitBreakStmt(_stmt) { throw new Error("Method not implemented."); }
+}
+
+/**
+ * Represents a break statement, which is used to exit loops prematurely.
+ */
+class Break extends Stmt {
+  accept(visitor) {
+    return visitor.visitBreakStmt(this);
+  }
 }
 
 /**
@@ -142,5 +152,6 @@ Stmt.Print = Print;
 Stmt.Var = Var;
 Stmt.If = If;
 Stmt.While = While;
+Stmt.Break = Break;
 
 module.exports = Stmt;

@@ -4,6 +4,11 @@ const Stmt = require('./Stmt');
 const Environment = require('./Environment');
 
 /**
+ * This is used just to report a break statement that is not inside a loop.
+ */
+class BreakInterrupt extends Error {}
+
+/**
  * The Interpreter walks the AST and evaluates expressions to produce a final value.
  */
 class Interpreter {
@@ -46,10 +51,20 @@ class Interpreter {
   }
 
   visitWhileStmt(stmt) {
-    while (this.isTruthy(this.evaluate(stmt.condition))) {
-      this.execute(stmt.body);
+    try {
+      while (this.isTruthy(this.evaluate(stmt.condition))) {
+        this.execute(stmt.body);
+      }
+    } catch (error) {
+      if (!(error instanceof BreakInterrupt)) {
+        throw error;
+      }
     }
     return null;
+  }
+
+  visitBreakStmt() {
+    throw new BreakInterrupt();
   }
 
   visitIfStmt(stmt) {

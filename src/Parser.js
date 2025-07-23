@@ -52,6 +52,7 @@ class Parser {
     this.tokens = tokens;
     this.errorReporter = errorReporter;
     this.current = 0;
+    this.loopDepth = 0;
   }
 
   /**
@@ -84,6 +85,7 @@ class Parser {
   }
 
   statement() {
+    if (this.match(TokenType.BREAK)) return this.breakStatement();
     if (this.match(TokenType.FOR)) return this.forStatement();
     if (this.match(TokenType.IF)) return this.ifStatement();
     if (this.match(TokenType.PRINT)) return this.printStatement();
@@ -92,6 +94,14 @@ class Parser {
       return new Stmt.Block(this.block());
     }
     return this.expressionStatement();
+  }
+
+  breakStatement() {
+    if (this.loopDepth == 0) {
+      this.error(this.previous(), "Must be inside a loop to use 'break'.");
+    }
+    this.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.");
+    return new Stmt.Break();
   }
 
   ifStatement() {
@@ -109,6 +119,7 @@ class Parser {
   }
 
   forStatement() {
+    this.loopDepth++;
     this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
 
     let initializer;
@@ -147,16 +158,19 @@ class Parser {
     if (initializer !== null) {
       body = new Stmt.Block([initializer, body]);
     }
-
+    
+    this.loopDepth--;
     return body;
   }
 
   whileStatement() {
+    this.loopDepth++;
     this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
     const condition = this.expression();
     this.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
     const body = this.statement();
 
+    this.loopDepth--;
     return new Stmt.While(condition, body);
   }
 

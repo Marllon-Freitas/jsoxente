@@ -6,7 +6,7 @@ const {
   PLUS, SEMICOLON, SLASH, STAR, QUESTION, COLON, BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL,
   GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, IDENTIFIER, STRING, NUMBER,
   AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR, PRINT, RETURN, SUPER,
-  THIS, TRUE, VAR, WHILE, EOF
+  THIS, TRUE, VAR, WHILE, BREAK, EOF
 } = TokenType;
 
 // A map of reserved keywords to their token types.
@@ -27,6 +27,7 @@ const keywords = {
   "true":   TRUE,
   "var":    VAR,
   "while":  WHILE,
+  "break":  BREAK
 };
 
 /**
