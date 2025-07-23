@@ -1,14 +1,7 @@
-var a = 10;
-
-if (a > 5) {
-  print "a its greater than 5";
-} else {
-  print "a its not greater than 5";
+var i = 0;
+while (i < 5) {
+  print i;
+  i = i + 1;
 }
 
-if (a < 5) {
-  print "This will not be printed";
-}
-
-// "Dangling Else" Test
-if (true) if(false) print "not"; else print "yes"; // This should print "yes"
+print "Done!";

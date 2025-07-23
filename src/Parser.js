@@ -15,6 +15,7 @@ class ParseError extends Error {}
   statement      → exprStmt
                 | ifStmt
                 | printStmt
+                | whileStmt
                 | block ;
 
   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -22,6 +23,7 @@ class ParseError extends Error {}
   printStmt      → "print" expression ";" ;
   block          → "{" declaration* "}" ;
   ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
+  whileStmt      → "while" "(" expression ")" statement ;
 
   expression     → assignment ;
   assignment     → IDENTIFIER "=" assignment | comma ;
@@ -81,6 +83,16 @@ class Parser {
     }
   }
 
+  statement() {
+    if (this.match(TokenType.IF)) return this.ifStatement();
+    if (this.match(TokenType.PRINT)) return this.printStatement();
+    if (this.match(TokenType.WHILE)) return this.whileStatement();
+    if (this.match(TokenType.LEFT_BRACE)) {
+      return new Stmt.Block(this.block());
+    }
+    return this.expressionStatement();
+  }
+
   ifStatement() {
     this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
     const condition = this.expression();
@@ -95,13 +107,13 @@ class Parser {
     return new Stmt.If(condition, thenBranch, elseBranch);
   }
 
-  statement() {
-    if (this.match(TokenType.IF)) return this.ifStatement();
-    if (this.match(TokenType.PRINT)) return this.printStatement();
-    if (this.match(TokenType.LEFT_BRACE)) {
-      return new Stmt.Block(this.block());
-    }
-    return this.expressionStatement();
+  whileStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+    const condition = this.expression();
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+    const body = this.statement();
+
+    return new Stmt.While(condition, body);
   }
 
   block() {

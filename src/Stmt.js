@@ -18,6 +18,26 @@ class Visitor {
   visitVariableStmt(_stmt) { throw new Error("Method not implemented."); }
   visitBlockStmt(_stmt) { throw new Error("Method not implemented."); }
   visitIfStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitWhileStmt(_stmt) { throw new Error("Method not implemented."); }
+}
+
+/**
+ * Represents a while loop statement.
+ */
+class While extends Stmt {
+  /**
+   * @param {Expr} condition The condition to check on each iteration.
+   * @param {Stmt} body The statement to execute in the loop.
+   */
+  constructor(condition, body) {
+    super();
+    this.condition = condition;
+    this.body = body;
+  }
+
+  accept(visitor) {
+    return visitor.visitWhileStmt(this);
+  }
 }
 
 /**
@@ -121,5 +141,6 @@ Stmt.Expression = Expression;
 Stmt.Print = Print;
 Stmt.Var = Var;
 Stmt.If = If;
+Stmt.While = While;
 
 module.exports = Stmt;

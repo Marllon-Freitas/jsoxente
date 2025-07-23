@@ -45,6 +45,13 @@ class Interpreter {
     return null;
   }
 
+  visitWhileStmt(stmt) {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.body);
+    }
+    return null;
+  }
+
   visitIfStmt(stmt) {
     if (this.isTruthy(this.evaluate(stmt.condition))) {
       this.execute(stmt.thenBranch);
