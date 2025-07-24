@@ -9,21 +9,32 @@ class ParseError extends Error {}
 /**
   program        → declaration* EOF ;
 
-  declaration    → varDecl
+  declaration    → funDecl
+                | varDecl
                 | statement ;
 
   statement      → exprStmt
                 | ifStmt
                 | printStmt
+                | returnStmt
                 | whileStmt
+                | forStmt
+                | breakStmt
                 | block ;
+
+  funDecl        → "fun" function ;
+  function       → IDENTIFIER "(" parameters? ")" block ;
+  parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 
   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
   exprStmt       → expression ";" ;
   printStmt      → "print" expression ";" ;
+  returnStmt     → "return" expression? ";" ; // <-- NOVO
   block          → "{" declaration* "}" ;
   ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
   whileStmt      → "while" "(" expression ")" statement ;
+  forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+  breakStmt      → "break" ";" ;
 
   expression     → assignment ;
   assignment     → IDENTIFIER "=" assignment | comma ;
@@ -33,7 +44,9 @@ class ParseError extends Error {}
   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
   term           → factor ( ( "-" | "+" ) factor )* ;
   factor         → unary ( ( "/" | "*" ) unary )* ;
-  unary          → ( "!" | "-" ) unary | primary ;
+  unary          → ( "!" | "-" ) unary | call ;
+  call           → primary ( "(" arguments? ")" )* ;
+  arguments      → expression ( "," expression )* ;
   primary        → NUMBER | STRING | "true" | "false" | "nil"
                 | "(" expression ")" | IDENTIFIER ;
   */
@@ -73,6 +86,7 @@ class Parser {
   // Grammar Rule Methods for Statements:
   declaration() {
     try {
+      if (this.match(TokenType.FUN)) return this.function("function");
       if (this.match(TokenType.VAR)) return this.varDeclaration();
       return this.statement();
     } catch (error) {
@@ -84,8 +98,30 @@ class Parser {
     }
   }
 
+  function(kind) {
+    const name = this.consume(TokenType.IDENTIFIER, `Expect ${kind} name.`);
+    this.consume(TokenType.LEFT_PAREN, `Expect '(' after ${kind} name.`);
+    
+    const parameters = [];
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (parameters.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 parameters.");
+        }
+        parameters.push(this.consume(TokenType.IDENTIFIER, "Expect parameter name."));
+      } while (this.match(TokenType.COMMA));
+    }
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+    
+    this.consume(TokenType.LEFT_BRACE, `Expect '{' before ${kind} body.`);
+    const body = this.block();
+    
+    return new Stmt.Function(name, parameters, body);
+  }
+
   statement() {
     if (this.match(TokenType.BREAK)) return this.breakStatement();
+    if (this.match(TokenType.RETURN)) return this.returnStatement();
     if (this.match(TokenType.FOR)) return this.forStatement();
     if (this.match(TokenType.IF)) return this.ifStatement();
     if (this.match(TokenType.PRINT)) return this.printStatement();
@@ -102,6 +138,17 @@ class Parser {
     }
     this.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.");
     return new Stmt.Break();
+  }
+
+  returnStatement() {
+    const keyword = this.previous();
+    let value = null;
+    if (!this.check(TokenType.SEMICOLON)) {
+      value = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after return value.");
+    return new Stmt.Return(keyword, value);
   }
 
   ifStatement() {
@@ -211,7 +258,7 @@ class Parser {
   }
 
   assignment() {
-    const expr = this.comma();
+    const expr = this.ternary();
 
     if (this.match(TokenType.EQUAL)) {
       const equals = this.previous();
@@ -229,10 +276,10 @@ class Parser {
   }
 
   comma() {
-    let expr = this.ternary();
+    let expr = this.assignment(); 
     while (this.match(TokenType.COMMA)) {
       const operator = this.previous();
-      const right = this.ternary();
+      const right = this.assignment();
       expr = new Expr.Binary(expr, operator, right);
     }
     return expr;
@@ -326,7 +373,34 @@ class Parser {
       return new Expr.Unary(operator, right);
     }
 
-    return this.primary();
+    return this.call();
+  }
+
+  call() {
+    let expr = this.primary();
+    while (true) {
+      if (this.match(TokenType.LEFT_PAREN)) {
+        expr = this.finishCall(expr);
+      } else {
+        break;
+      }
+    }
+    return expr;
+  }
+
+  finishCall(callee) {
+    const args = [];
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (args.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 arguments.");
+        }
+        args.push(this.expression());
+      } while (this.match(TokenType.COMMA));
+    }
+
+    const paren = this.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+    return new Expr.Call(callee, paren, args);
   }
   
   primary() {

@@ -2,6 +2,9 @@ const TokenType = require('./TokenType');
 const RuntimeError = require('./RuntimeError');
 const Stmt = require('./Stmt');
 const Environment = require('./Environment');
+const Callable = require('./Callable');
+const Function = require('./Function');
+const Return = require('./Return');
 
 /**
  * This is used just to report a break statement that is not inside a loop.
@@ -19,6 +22,21 @@ class Interpreter {
     this.runtimeError = runtimeErrorReporter;
     this.globals = new Environment();
     this.environment = this.globals;
+
+    // Define a native 'clock' function.
+    this.globals.define("clock", new class extends Callable {
+      arity() {
+        return 0;
+      }
+
+      call(_interpreter, _args) {
+        return Date.now() / 1000.0;
+      }
+
+      toString() {
+        return "<native fn>";
+      }
+    }());
   }
 
   /**
@@ -40,6 +58,17 @@ class Interpreter {
   }
 
   // Statement execution methods:
+  /**
+   * Handles a function declaration statement.
+   * @param {Stmt.Function} stmt The function statement node.
+   */
+  visitFunctionStmt(stmt) {
+    const func = new Function(stmt, this.environment);
+    this.environment.define(stmt.name.lexeme, func);
+    
+    return null;
+  }
+
   visitVariableStmt(stmt) {
     let value = null;
     if (stmt.initializer !== null) {
@@ -48,6 +77,14 @@ class Interpreter {
 
     this.environment.define(stmt.name.lexeme, value);
     return null;
+  }
+
+  visitReturnStmt(stmt) {
+    let value = null;
+    if (stmt.value !== null) {
+      value = this.evaluate(stmt.value);
+    }
+    throw new Return(value);
   }
 
   visitWhileStmt(stmt) {
@@ -90,6 +127,24 @@ class Interpreter {
     const value = this.evaluate(stmt.expression);
     console.log(this.stringify(value));
     return null;
+  }
+
+  visitCallExpr(expr) {
+    const callee = this.evaluate(expr.callee);
+    const args = [];
+    for (const argument of expr.arguments) {
+      args.push(this.evaluate(argument));
+    }
+
+    if (!(callee instanceof Callable)) {
+      throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+    }
+
+    if (args.length !== callee.arity()) {
+      throw new RuntimeError(expr.paren, `Expected ${callee.arity()} arguments but got ${args.length}.`);
+    }
+
+    return callee.call(this, args);
   }
   
   // Expression evaluation methods:

@@ -21,6 +21,7 @@ class Visitor {
   visitTernaryExpr(_expr) { throw new Error("Method not implemented."); }
   visitVariableExpr(_expr) { throw new Error("Method not implemented."); }
   visitAssignExpr(_expr) { throw new Error("Method not implemented."); }
+  visitCallExpr(_expr) { throw new Error("Method not implemented."); }
 }
 
 /**
@@ -157,6 +158,27 @@ class Variable extends Expr {
   }
 }
 
+/**
+ * Represents a function call expression.
+ */
+class Call extends Expr {
+  /**
+   * @param {Expr} callee The expression that evaluates to the function to be called.
+   * @param {Token} paren The closing parenthesis token, used for error reporting.
+   * @param {Expr[]} args The list of argument expressions.
+   */
+  constructor(callee, paren, args) {
+    super();
+    this.callee = callee;
+    this.paren = paren;
+    this.arguments = args;
+  }
+  accept(visitor) {
+    return visitor.visitCallExpr(this);
+  }
+}
+
+
 Expr.Visitor  = Visitor;
 Expr.Assign   = Assign;
 Expr.Binary   = Binary;
@@ -165,5 +187,6 @@ Expr.Literal  = Literal;
 Expr.Unary    = Unary;
 Expr.Ternary  = Ternary;
 Expr.Variable = Variable;
+Expr.Call     = Call;
 
 module.exports = Expr;

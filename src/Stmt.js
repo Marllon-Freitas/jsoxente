@@ -20,6 +20,48 @@ class Visitor {
   visitIfStmt(_stmt) { throw new Error("Method not implemented."); }
   visitWhileStmt(_stmt) { throw new Error("Method not implemented."); }
   visitBreakStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitFunctionStmt(_stmt) { throw new Error("Method not implemented."); }
+  visitReturnStmt(_stmt) { throw new Error("Method not implemented."); }
+}
+
+/**
+ * Represents a return statement.
+ */
+class Return extends Stmt {
+  /**
+   * @param {Token} keyword The 'return' token itself.
+   * @param {Expr | null} value The expression being returned.
+   */
+  constructor(keyword, value) {
+    super();
+    this.keyword = keyword;
+    this.value = value;
+  }
+  
+  accept(visitor) {
+    return visitor.visitReturnStmt(this);
+  }
+}
+
+/**
+ * Represents a function declaration statement.
+ */
+class Function extends Stmt {
+  /**
+   * @param {Token} name The function's name.
+   * @param {Token[]} params The list of parameter tokens.
+   * @param {Stmt[]} body The list of statements in the function's body.
+   */
+  constructor(name, params, body) {
+    super();
+    this.name = name;
+    this.params = params;
+    this.body = body;
+  }
+  
+  accept(visitor) {
+    return visitor.visitFunctionStmt(this);
+  }
 }
 
 /**
@@ -153,5 +195,7 @@ Stmt.Var = Var;
 Stmt.If = If;
 Stmt.While = While;
 Stmt.Break = Break;
+Stmt.Function = Function;
+Stmt.Return = Return;
 
 module.exports = Stmt;
